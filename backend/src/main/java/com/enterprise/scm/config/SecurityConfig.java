@@ -81,16 +81,20 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         
+        List<String> patterns = new java.util.ArrayList<>();
+        patterns.add("http://localhost:[*]");
+        patterns.add("http://localhost:8080");
+        patterns.add("https://*.vercel.app");
+
         String allowedOriginsEnv = System.getenv("ALLOWED_ORIGINS");
         if (allowedOriginsEnv != null && !allowedOriginsEnv.trim().isEmpty()) {
-            config.setAllowedOriginPatterns(List.of(allowedOriginsEnv.split(",")));
-        } else {
-            config.setAllowedOriginPatterns(List.of(
-                "http://localhost:[*]",
-                "http://localhost:8080",
-                "https://*.vercel.app"
-            ));
+            for (String origin : allowedOriginsEnv.split(",")) {
+                if (!origin.trim().isEmpty()) {
+                    patterns.add(origin.trim());
+                }
+            }
         }
+        config.setAllowedOriginPatterns(patterns);
         
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
