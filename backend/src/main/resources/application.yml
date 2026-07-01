@@ -61,7 +61,7 @@ server:
 
 app:
   jwt:
-    secret: 9a4f2c8d3b7a1e5f8g9h0i2k3l4m5n6o7p8q9r0s1t2u3v4w5x6y7z8a9b0c1d2e3f
+    secret: ${JWT_SECRET:9a4f2c8d3b7a1e5f8g9h0i2k3l4m5n6o7p8q9r0s1t2u3v4w5x6y7z8a9b0c1d2e3f}
     expiration-ms: 86400000 # 24 hours
     refresh-expiration-ms: 604800000 # 7 days
   rate-limit:

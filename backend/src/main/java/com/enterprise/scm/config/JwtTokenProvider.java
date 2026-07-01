@@ -21,19 +21,32 @@ public class JwtTokenProvider {
     private final long jwtExpirationInMs;
 
     public JwtTokenProvider(
-            @Value("${app.jwt.secret}") String jwtSecret,
-            @Value("${app.jwt.expiration-ms}") long jwtExpirationInMs) {
+            @Value("${app.jwt.secret:}") String jwtSecret,
+            @Value("${app.jwt.expiration-ms:86400000}") long jwtExpirationInMs) {
         this.jwtExpirationInMs = jwtExpirationInMs;
-        byte[] keyBytes;
-        try {
-            keyBytes = Decoders.BASE64.decode(jwtSecret);
-            if (keyBytes.length < 32) {
-                keyBytes = getSha256Bytes(jwtSecret);
+        SecretKey tempKey = null;
+        if (jwtSecret != null && !jwtSecret.trim().isEmpty()) {
+            try {
+                byte[] keyBytes = Decoders.BASE64.decode(jwtSecret.trim());
+                if (keyBytes.length >= 32) {
+                    tempKey = Keys.hmacShaKeyFor(keyBytes);
+                } else {
+                    tempKey = Keys.hmacShaKeyFor(getSha256Bytes(jwtSecret.trim()));
+                }
+            } catch (Exception e) {
+                try {
+                    tempKey = Keys.hmacShaKeyFor(getSha256Bytes(jwtSecret.trim()));
+                } catch (Exception ex) {
+                    logger.error("Failed to derive key from secret: {}", ex.getMessage());
+                }
             }
-        } catch (Exception e) {
-            keyBytes = getSha256Bytes(jwtSecret);
         }
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+
+        if (tempKey == null) {
+            logger.warn("JWT secret is null, empty, or invalid. Generating a secure random key for this session.");
+            tempKey = Jwts.SIG.HS256.key().build();
+        }
+        this.key = tempKey;
     }
 
     private static byte[] getSha256Bytes(String input) {
