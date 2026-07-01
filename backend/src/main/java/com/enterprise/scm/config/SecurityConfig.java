@@ -83,9 +83,13 @@ public class SecurityConfig {
         
         String allowedOriginsEnv = System.getenv("ALLOWED_ORIGINS");
         if (allowedOriginsEnv != null && !allowedOriginsEnv.trim().isEmpty()) {
-            config.setAllowedOrigins(List.of(allowedOriginsEnv.split(",")));
+            config.setAllowedOriginPatterns(List.of(allowedOriginsEnv.split(",")));
         } else {
-            config.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:8080"));
+            config.setAllowedOriginPatterns(List.of(
+                "http://localhost:[*]",
+                "http://localhost:8080",
+                "https://*.vercel.app"
+            ));
         }
         
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
