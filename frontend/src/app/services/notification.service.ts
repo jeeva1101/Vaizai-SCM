@@ -1,5 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 export interface Notification {
   id: number;
@@ -18,7 +19,7 @@ export class NotificationService {
   private http = inject(HttpClient);
 
   loadNotifications() {
-    this.http.get<Notification[]>('http://localhost:8080/api/users/me/notifications').subscribe({
+    this.http.get<Notification[]>(`${environment.apiUrl}/users/me/notifications`).subscribe({
       next: (notifs) => {
         this.notifications.set(notifs);
       },
@@ -39,7 +40,7 @@ export class NotificationService {
   }
 
   markAsRead(id: number) {
-    this.http.put<any>(`http://localhost:8080/api/users/me/notifications/${id}/read`, {}).subscribe({
+    this.http.put<any>(`${environment.apiUrl}/users/me/notifications/${id}/read`, {}).subscribe({
       next: () => {
         this.notifications.update(prev => 
           prev.map(n => n.id === id ? { ...n, isRead: true } : n)

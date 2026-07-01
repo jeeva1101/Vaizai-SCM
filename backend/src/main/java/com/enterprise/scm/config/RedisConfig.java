@@ -24,7 +24,12 @@ public class RedisConfig {
 
     @Bean
     @ConditionalOnClass(name = "org.springframework.data.redis.connection.RedisConnectionFactory")
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, Object> redisTemplate(org.springframework.beans.factory.ObjectProvider<RedisConnectionFactory> connectionFactoryProvider) {
+        RedisConnectionFactory connectionFactory = connectionFactoryProvider.getIfAvailable();
+        if (connectionFactory == null) {
+            logger.warn("RedisConnectionFactory is not available. Skipping RedisTemplate initialization.");
+            return null;
+        }
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
@@ -36,24 +41,29 @@ public class RedisConfig {
 
     @Bean
     @Primary
-    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        try {
-            // Probe the connection first to fail fast
-            connectionFactory.getConnection().ping();
+    public CacheManager cacheManager(org.springframework.beans.factory.ObjectProvider<RedisConnectionFactory> connectionFactoryProvider) {
+        RedisConnectionFactory connectionFactory = connectionFactoryProvider.getIfAvailable();
+        if (connectionFactory != null) {
+            try {
+                // Probe the connection first to fail fast
+                connectionFactory.getConnection().ping();
 
-            RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                    .entryTtl(Duration.ofMinutes(10))
-                    .disableCachingNullValues()
-                    .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                    .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+                RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+                        .entryTtl(Duration.ofMinutes(10))
+                        .disableCachingNullValues()
+                        .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+                        .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
 
-            logger.info("Redis is available. Initializing Redis Cache Manager.");
-            return RedisCacheManager.builder(connectionFactory)
-                    .cacheDefaults(config)
-                    .build();
-        } catch (Exception ex) {
-            logger.warn("Redis is not available, falling back to local concurrent map cache manager: {}", ex.getMessage());
-            return new ConcurrentMapCacheManager();
+                logger.info("Redis is available. Initializing Redis Cache Manager.");
+                return RedisCacheManager.builder(connectionFactory)
+                        .cacheDefaults(config)
+                        .build();
+            } catch (Exception ex) {
+                logger.warn("Redis connection failed, falling back to local concurrent map cache manager: {}", ex.getMessage());
+            }
+        } else {
+            logger.info("RedisConnectionFactory is not available, falling back to local concurrent map cache manager.");
         }
+        return new ConcurrentMapCacheManager();
     }
 }

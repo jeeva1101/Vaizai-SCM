@@ -102,4 +102,5 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         enable_lazy_load_no_trans: true
   autoconfigure:
-    exclude: []
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
