@@ -4,6 +4,34 @@ spring:
   profiles:
     active: dev
 
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /api
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:9a4f2c8d3b7a1e5f8g9h0i2k3l4m5n6o7p8q9r0s1t2u3v4w5x6y7z8a9b0c1d2e3f}
+    expiration-ms: 86400000 # 24 hours
+    refresh-expiration-ms: 604800000 # 7 days
+  rate-limit:
+    capacity: 100
+    refill-tokens: 10
+    refill-period-seconds: 1
+
+logging:
+  level:
+    root: WARN
+    org.springframework: WARN
+    org.springframework.security: WARN
+    org.hibernate: WARN
+    org.apache.catalina: WARN
+    org.apache.tomcat: WARN
+    com.zaxxer.hikari: WARN
+    io.lettuce: WARN
+    io.netty: WARN
+    com.enterprise.scm: INFO
+
 ---
 
 spring:
@@ -54,33 +82,7 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
-server:
-  port: ${PORT:8080}
-  servlet:
-    context-path: /api
 
-app:
-  jwt:
-    secret: ${JWT_SECRET:9a4f2c8d3b7a1e5f8g9h0i2k3l4m5n6o7p8q9r0s1t2u3v4w5x6y7z8a9b0c1d2e3f}
-    expiration-ms: 86400000 # 24 hours
-    refresh-expiration-ms: 604800000 # 7 days
-  rate-limit:
-    capacity: 100
-    refill-tokens: 10
-    refill-period-seconds: 1
-
-logging:
-  level:
-    root: WARN
-    org.springframework: WARN
-    org.springframework.security: WARN
-    org.hibernate: WARN
-    org.apache.catalina: WARN
-    org.apache.tomcat: WARN
-    com.zaxxer.hikari: WARN
-    io.lettuce: WARN
-    io.netty: WARN
-    com.enterprise.scm: INFO
 
 ---
 
