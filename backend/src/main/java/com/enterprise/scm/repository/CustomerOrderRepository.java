@@ -12,7 +12,7 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, St
     List<CustomerOrder> findByOrganizationId(String organizationId);
     List<CustomerOrder> findByStatus(String status);
     
-    @Query("SELECT COALESCE(SUM(co.totalAmount), 0) FROM CustomerOrder co WHERE co.status = 'DELIVERED'")
+    @Query("SELECT SUM(co.totalAmount) FROM CustomerOrder co WHERE co.status = 'DELIVERED'")
     BigDecimal calculateTotalRevenue();
 
     @Query("SELECT COUNT(co) FROM CustomerOrder co WHERE co.status = 'PENDING' OR co.status = 'APPROVED' OR co.status = 'PROCESSING'")

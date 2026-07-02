@@ -49,7 +49,13 @@ public class DashboardController {
 
         // Calculations
         BigDecimal totalSpend = purchaseOrderRepository.calculateTotalSpend();
+        if (totalSpend == null) {
+            totalSpend = BigDecimal.ZERO;
+        }
         BigDecimal totalRevenue = customerOrderRepository.calculateTotalRevenue();
+        if (totalRevenue == null) {
+            totalRevenue = BigDecimal.ZERO;
+        }
         long activeOrders = customerOrderRepository.countActiveOrders();
         long lowStockCount = inventoryItemRepository.countLowStockItems();
         long totalWarehouses = warehouseRepository.count();
